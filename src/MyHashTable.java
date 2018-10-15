@@ -1,13 +1,11 @@
-/**
- * Probing table implementation of hash tables.
- * Note that all "matching" is based on the equals method.
- *
- * @author Mark Allen Weiss
- */
 public class MyHashTable<AnyType> {
 
+    private static final int DEFAULT_SIZE = 18;
+    private HashEntry<AnyType>[] myTable; // The myTable of elements
+    private int currentSize;     // The number of occupied cells
+
     public MyHashTable() {
-        this(DEFAULT_TABLE_SIZE);
+        this(DEFAULT_SIZE);
     }
 
     public MyHashTable(int size) {
@@ -19,14 +17,14 @@ public class MyHashTable<AnyType> {
         int currentPos = findPos(x);
         if (isActive(currentPos))
             return;
-        array[currentPos] = new HashEntry<AnyType>(x, true);
+        myTable[currentPos] = new HashEntry<AnyType>(x, true);
 
-        if (++currentSize > array.length / 2)
+        if (++currentSize > myTable.length / 2)
             rehash();
     }
 
     private void rehash() {
-        HashEntry<AnyType>[] oldArr = array;
+        HashEntry<AnyType>[] oldArr = myTable;
 
         createEntryCells(nextPrime(2 * oldArr.length));
         currentSize = 0;
@@ -40,11 +38,11 @@ public class MyHashTable<AnyType> {
         int offset = 1;
         int currentPos = myhash(x);
 
-        while (array[currentPos] != null && !array[currentPos].element.equals(x)) {
+        while (myTable[currentPos] != null && !myTable[currentPos].element.equals(x)) {
             currentPos += offset;
             offset += 2;
-            if (currentPos >= array.length)
-                currentPos -= array.length;
+            if (currentPos >= myTable.length)
+                currentPos -= myTable.length;
         }
         return currentPos;
     }
@@ -52,7 +50,7 @@ public class MyHashTable<AnyType> {
     public void remove(AnyType x) {
         int currentPos = findPos(x);
         if (isActive(currentPos))
-            array[currentPos].isAlive = false;
+            myTable[currentPos].isAlive = false;
     }
 
     public boolean contains(AnyType x) {
@@ -61,20 +59,20 @@ public class MyHashTable<AnyType> {
     }
 
     private boolean isActive(int currentPos) {
-        return array[currentPos] != null && array[currentPos].isAlive;
+        return myTable[currentPos] != null && myTable[currentPos].isAlive;
     }
 
     public void clear() {
         currentSize = 0;
-        for (int i = 0; i < array.length; i++) array[i] = null;
+        for (int i = 0; i < myTable.length; i++) myTable[i] = null;
     }
 
     private int myhash(AnyType x) {
         int hashVal = x.hashCode();
 
-        hashVal %= array.length;
+        hashVal %= myTable.length;
         if (hashVal < 0)
-            hashVal += array.length;
+            hashVal += myTable.length;
 
         return hashVal;
     }
@@ -93,13 +91,8 @@ public class MyHashTable<AnyType> {
         }
     }
 
-    private static final int DEFAULT_TABLE_SIZE = 11;
-
-    private HashEntry<AnyType>[] array; // The array of elements
-    private int currentSize;              // The number of occupied cells
-
     private void createEntryCells(int arraySize) {
-        array = new HashEntry[nextPrime(arraySize)];
+        myTable = new HashEntry[nextPrime(arraySize)];
     }
 
     //Internal method to find a prime number at least as large as n.
