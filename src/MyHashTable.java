@@ -8,27 +8,25 @@ public class MyHashTable<AnyType> {
         this(DEFAULT_SIZE);
     }
 
+    // Allen Weiss Text Book solution with tweaks.
     public MyHashTable(int size) {
         createEntryCells(size);
-        clear(); // textbook advices this type of precaution.
+        clear();
     }
 
     public void insert(AnyType x) {
         int currentPos = findPos(x);
-        if (isActive(currentPos))
+        if (isAlive(currentPos))
             return;
-        myTable[currentPos] = new HashEntry<AnyType>(x, true);
-
-        if (++currentSize > myTable.length / 2)
+        myTable[currentPos] = new HashEntry<>(x, true);
+        if (++currentSize > myTable.length / 2)  //==> load factor 0.5
             rehash();
     }
 
     private void rehash() {
         HashEntry<AnyType>[] oldArr = myTable;
-
         createEntryCells(nextPrime(2 * oldArr.length));
         currentSize = 0;
-
         for (int i = 0; i < oldArr.length; i++)
             if (oldArr[i] != null && oldArr[i].isAlive)
                 insert(oldArr[i].element);
@@ -36,8 +34,7 @@ public class MyHashTable<AnyType> {
 
     private int findPos(AnyType x) {
         int offset = 1;
-        int currentPos = myhash(x);
-
+        int currentPos = myHashfunc(x);
         while (myTable[currentPos] != null && !myTable[currentPos].element.equals(x)) {
             currentPos += offset;
             offset += 2;
@@ -48,17 +45,18 @@ public class MyHashTable<AnyType> {
     }
 
     public void remove(AnyType x) {
+        // the rehash and load factor makes it so that we do not need to update the currentSize field everytime.
         int currentPos = findPos(x);
-        if (isActive(currentPos))
+        if (isAlive(currentPos))
             myTable[currentPos].isAlive = false;
     }
 
     public boolean contains(AnyType x) {
         int currentPos = findPos(x);
-        return isActive(currentPos);
+        return isAlive(currentPos);
     }
 
-    private boolean isActive(int currentPos) {
+    private boolean isAlive(int currentPos) {
         return myTable[currentPos] != null && myTable[currentPos].isAlive;
     }
 
@@ -67,14 +65,12 @@ public class MyHashTable<AnyType> {
         for (int i = 0; i < myTable.length; i++) myTable[i] = null;
     }
 
-    private int myhash(AnyType x) {
-        int hashVal = x.hashCode();
-
-        hashVal %= myTable.length;
-        if (hashVal < 0)
-            hashVal += myTable.length;
-
-        return hashVal;
+    private int myHashfunc(AnyType e) {
+        int objHash = e.hashCode();
+        objHash %= myTable.length;
+        if (objHash < 0)
+            objHash += myTable.length;
+        return objHash;
     }
 
     private class HashEntry<AnyType> {
