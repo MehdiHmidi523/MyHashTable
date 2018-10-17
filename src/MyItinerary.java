@@ -3,13 +3,13 @@ import java.util.Random;
 /**
  * Created by Mehdi on 16/10/2018 for the MyItinerary project.
  */
-public class MyItinerary {
+public class MyItinerary implements A2Itinerary<A2Direction>{
 
     private int width=0,height=0;
     private Point head;
-    private enum Moves {UP, DOWN, LEFT, RIGHT} //to calculate the new rotate right coordinates.
+    private int intersection = 0;
 
-    /*The hint provided in the ex, suggests using the previous hash implementation to find cycles on a path.
+    /* The hint provided in the ex, suggests using the previous hash implementation to find cycles on a path.
      * Keeping a set of all the nodes have seen so far and testing to see if the next node is in that set would be
      * a perfectly correct solution. It would run fast as well.
      * However it would use enough extra space to make a copy of the linked list.
@@ -17,48 +17,53 @@ public class MyItinerary {
      * Efficient solution would use either Brent's Or Floyd's algorithm
      */
 
-    public MyItinerary() {
-    }
+    public MyItinerary() { }
     public int widthOfItinerary() { return Math.abs(width); }
     public int heightOfItinerary() { return Math.abs(height); }
+    public A2Direction[] rotateRight() {
+        String str= "the new path will take these Steps: ";
+        // TODO: next point is affected not the origin;  start from origin until you reach last.next points to null.
+        if (head.getMove() == A2Direction.UP)
+           str+="RIGHT.";
+        else if (head.getMove() == A2Direction.RIGHT)
+            str+="DOWN.";
+        else if (head.getMove() == A2Direction.LEFT)
+            str+="UP.";
+        else str+="LEFT.";
 
-    public void rotateRight() {
-    // TODO: next point is affected not the origin;  start from origin until you reach last.next points to null.
-        if (head.getMove() == Moves.UP)
-            head.setMove(Moves.RIGHT);
-        else if (head.getMove() == Moves.RIGHT)
-            head.setMove(Moves.DOWN);
-        else if (head.getMove() == Moves.LEFT)
-            head.setMove(Moves.UP);
-        else head.setMove(Moves.LEFT);
+        return new A2Direction[0];
+    }
+
+    public int[] getIntersections() {
 
     }
 
-    /*
-     * Searching for the smallest power of two 2i that is larger than both λ and μ. For i = 0, 1, 2, ...,
-     * the algorithm compares X__2i−1 with each subsequent sequence value up to the next power of two,
-     * stopping when it finds a match. It has two advantages compared to the tortoise and hare algorithm:
-     * it finds the correct length λ of the cycle directly, rather than needing to search for it in a subsequent stage,
-     * and its steps involve only one evaluation of f rather than three
-     */
-    public String getIntersections() {
-
+    private boolean isLoopPresent(Point startNode){
+        Point slowPointer = startNode; // Tortoise is at starting location.
+        Point fastPointer = startNode; // Hare is at starting location.
+        while(fastPointer!=null && fastPointer.getToNext()!=null){ // If ptr2 encounters NULL, it means there is no Loop in Linked list.
+            slowPointer = slowPointer.getToNext(); // ptr1 moving one node at at time
+            fastPointer = fastPointer.getToNext().getToNext(); // ptr2 moving two nodes at at time
+            if(slowPointer==fastPointer) // if ptr1 and ptr2 meets, it means linked list contains loop.
+                return true;
+        }
+        return false;
     }
 
-    private void makeMove() {
+    public void makeMove() {
         Random rn = new Random();
-        int pickMove = rn.nextInt(Moves.values().length);
-        head.setMove(Moves.values()[pickMove]);
-        Point move = new Point(50, 50);
-        if (head.getMove() == Moves.UP){
+        int pickMove = rn.nextInt(A2Direction.values().length);
+        head.setMove(A2Direction.values()[pickMove]);
+        Point move = new Point(0, 0);
+        if (head.getMove() == A2Direction.UP){
             move.setY(head.getY() + 1);
             height++;
         }
-        else if (head.getMove() == Moves.DOWN){
+        else if (head.getMove() == A2Direction.DOWN){
             move.setY(head.getY() - 1);
             height--;
         }
-        else if (head.getMove() == Moves.RIGHT){
+        else if (head.getMove() == A2Direction.RIGHT){
             move.setX(head.getX() + 1);
             width++;
         }
@@ -66,25 +71,26 @@ public class MyItinerary {
             move.setX(head.getX() - 1);
             width--;
         }
-        /* Make next of new Node as head */
-        move.setNext(head);
-        /* Move the head to point to new Node */
-        head = move;
+        move.setNext(head);// Make next of new Node as head
+        head = move;// Move the head to point to new Node
+        if(isLoopPresent(head)){
+            intersection++;
+        }
     }
 
     private class Point {
         private Point toNext = null;
-        private Moves myDirection = null;
+        private A2Direction myDirection = null;
         private int x;
         private int y;
         public Point(int x1, int y1) {
             this.x = x1;
             this.y = y1;
         }
-        public Moves getMove() { return myDirection; }
+        public A2Direction getMove() { return myDirection; }
         public Point getToNext() { return toNext; }
         public void setNext(Point target) { toNext = target; }
-        public void setMove(Moves action) { myDirection = action; }
+        public void setMove(A2Direction action) { myDirection = action; }
         public int getX() { return x; }
         public int getY() { return y; }
         public void setX(int x) { this.x = x; }

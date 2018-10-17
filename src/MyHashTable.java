@@ -1,4 +1,4 @@
-public class MyHashTable<AnyType> {
+public class MyHashTable<AnyType> implements A2HashTable<AnyType>{
 
     private static final int DEFAULT_SIZE = 18;
     private HashEntry<AnyType>[] myTable; // The myTable of elements
@@ -23,6 +23,14 @@ public class MyHashTable<AnyType> {
             rehash();
     }
 
+    @Override
+    public void delete(AnyType element) {
+        // the rehash and load factor makes it so that we do not need to update the currentSize field everytime.
+        int currentPos = findPos(element);
+        if (isAlive(currentPos))
+            myTable[currentPos].isAlive = false;
+    }
+
     private void rehash() {
         HashEntry<AnyType>[] oldArr = myTable;
         createEntryCells(nextPrime(2 * oldArr.length));
@@ -42,13 +50,6 @@ public class MyHashTable<AnyType> {
                 currentPos -= myTable.length;
         }
         return currentPos;
-    }
-
-    public void remove(AnyType x) {
-        // the rehash and load factor makes it so that we do not need to update the currentSize field everytime.
-        int currentPos = findPos(x);
-        if (isAlive(currentPos))
-            myTable[currentPos].isAlive = false;
     }
 
     public boolean contains(AnyType x) {
