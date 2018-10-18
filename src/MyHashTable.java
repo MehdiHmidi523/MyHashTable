@@ -25,7 +25,6 @@ public class MyHashTable<AnyType> implements A2HashTable<AnyType>{
 
     @Override
     public void delete(AnyType element) {
-        // the rehash and load factor makes it so that we do not need to update the currentSize field everytime.
         int currentPos = findPos(element);
         if (isAlive(currentPos))
             myTable[currentPos].isAlive = false;
@@ -75,14 +74,14 @@ public class MyHashTable<AnyType> implements A2HashTable<AnyType>{
     }
 
     private class HashEntry<AnyType> {
-        public AnyType element;   // the element
-        public boolean isAlive;  // false if marked deleted
+        AnyType element;   // the element
+        boolean isAlive;  // false if marked deleted
 
-        public HashEntry(AnyType e) {
+        HashEntry(AnyType e) {
             this(e, true);
         }
 
-        public HashEntry(AnyType e, boolean i) {
+        HashEntry(AnyType e, boolean i) {
             element = e;
             isAlive = i;
         }
