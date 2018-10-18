@@ -1,99 +1,101 @@
+import java.util.Arrays;
 import java.util.Random;
 
 /**
  * Created by Mehdi on 16/10/2018 for the MyItinerary project.
  */
 public class MyItinerary implements A2Itinerary<A2Direction>{
+    private int width=0,height=0,intersects=0,arrows=0;
+    private Point head; // only moves forward.
+    private int[] intersection = new int[100];
+    private MyHashTable<Point> collider = new MyHashTable<>(300);
+    private A2Direction[] IgotTheMoves = new A2Direction[1000];
 
-    private int width=0,height=0;
-    private Point head;
-    private int intersection = 0;
+    public static void main(String[] args){
+        MyItinerary simulate= new MyItinerary();
+        for(int i=0;i<20;i++)
+            simulate.makeMove();
+        System.out.println(Arrays.toString(simulate.getIntersections()));
+        System.out.println(simulate.widthOfItinerary());
+        System.out.println(simulate.heightOfItinerary());
+
+    }
 
     /* The hint provided in the ex, suggests using the previous hash implementation to find cycles on a path.
-     * Keeping a set of all the nodes have seen so far and testing to see if the next node is in that set would be
+     * Keeping a set of all the nodes that have seen so far and testing to see if the next node is in that set would be
      * a perfectly correct solution. It would run fast as well.
      * However it would use enough extra space to make a copy of the linked list.
      * Allocating that much memory is prohibitively expensive for large lists. // Inefficient solution
-     * Efficient solution would use either Brent's Or Floyd's algorithm
+     * Efficient solution would use either Brent's Or Floyd's algorithm and intuitively keep track of intersections.
      */
 
-    public MyItinerary() { }
+    public MyItinerary() {
+        head = new Point(0,0);
+        collider.insert(head);
+    }
+
     public int widthOfItinerary() { return Math.abs(width); }
     public int heightOfItinerary() { return Math.abs(height); }
+    // TODO: next point is affected not the origin;  start from origin until you reach last.next points to null
     public A2Direction[] rotateRight() {
         String str= "the new path will take these Steps: ";
-        // TODO: next point is affected not the origin;  start from origin until you reach last.next points to null.
-        if (head.getMove() == A2Direction.UP)
+        /*if (head.getMove() == A2Direction.UP)
            str+="RIGHT.";
         else if (head.getMove() == A2Direction.RIGHT)
             str+="DOWN.";
         else if (head.getMove() == A2Direction.LEFT)
             str+="UP.";
         else str+="LEFT.";
-
+*/
         return new A2Direction[0];
     }
-
     public int[] getIntersections() {
-
+        return intersection;
     }
 
-    private boolean isLoopPresent(Point startNode){
-        Point slowPointer = startNode; // Tortoise is at starting location.
-        Point fastPointer = startNode; // Hare is at starting location.
-        while(fastPointer!=null && fastPointer.getToNext()!=null){ // If ptr2 encounters NULL, it means there is no Loop in Linked list.
-            slowPointer = slowPointer.getToNext(); // ptr1 moving one node at at time
-            fastPointer = fastPointer.getToNext().getToNext(); // ptr2 moving two nodes at at time
-            if(slowPointer==fastPointer) // if ptr1 and ptr2 meets, it means linked list contains loop.
-                return true;
-        }
-        return false;
-    }
-
+    /*Simulates a random path and keeps track of directions and intersections.*/
     public void makeMove() {
         Random rn = new Random();
         int pickMove = rn.nextInt(A2Direction.values().length);
-        head.setMove(A2Direction.values()[pickMove]);
         Point move = new Point(0, 0);
-        if (head.getMove() == A2Direction.UP){
+        IgotTheMoves[arrows++]=A2Direction.values()[pickMove]; // ==> for the rotate right method.
+
+        if (IgotTheMoves[arrows-1]== A2Direction.UP){
             move.setY(head.getY() + 1);
+            move.setX(head.getX());
             height++;
         }
-        else if (head.getMove() == A2Direction.DOWN){
+        else if (IgotTheMoves[arrows-1] == A2Direction.DOWN){
             move.setY(head.getY() - 1);
+            move.setX(head.getX());
             height--;
         }
-        else if (head.getMove() == A2Direction.RIGHT){
+        else if (IgotTheMoves[arrows-1] == A2Direction.RIGHT){
             move.setX(head.getX() + 1);
+            move.setY(head.getY());
             width++;
         }
         else{
             move.setX(head.getX() - 1);
+            move.setY(head.getY());
             width--;
         }
-        move.setNext(head);// Make next of new Node as head
-        head = move;// Move the head to point to new Node
-        if(isLoopPresent(head)){
-            intersection++;
-        }
+
+        if (!collider.contains(move)) collider.insert(move); // ==>  keeps a list of intersections
+        else intersection[intersects++]= arrows;
+        head = move;
     }
 
     private class Point {
-        private Point toNext = null;
-        private A2Direction myDirection = null;
-        private int x;
-        private int y;
-        public Point(int x1, int y1) {
+        int x, y;
+        Point(int x1, int y1) {
             this.x = x1;
             this.y = y1;
         }
-        public A2Direction getMove() { return myDirection; }
-        public Point getToNext() { return toNext; }
-        public void setNext(Point target) { toNext = target; }
-        public void setMove(A2Direction action) { myDirection = action; }
-        public int getX() { return x; }
-        public int getY() { return y; }
-        public void setX(int x) { this.x = x; }
-        public void setY(int y) { this.y = y; }
+
+        int getX() { return x; }
+        int getY() { return y; }
+        void setX(int x) { this.x = x; }
+        void setY(int y) { this.y = y; }
     }
 }
