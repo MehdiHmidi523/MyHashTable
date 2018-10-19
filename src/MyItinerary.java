@@ -4,98 +4,136 @@ import java.util.Random;
 /**
  * Created by Mehdi on 16/10/2018 for the MyItinerary project.
  */
-public class MyItinerary implements A2Itinerary<A2Direction>{
-    private int width=0,height=0,intersects=0,arrows=0;
-    private Point head; // only moves forward.
-    private int[] intersection = new int[100];
-    private MyHashTable<Point> collider = new MyHashTable<>(300);
-    private A2Direction[] IgotTheMoves = new A2Direction[1000];
+public class MyItinerary implements A2Itinerary<A2Direction> {
+    private int miW = 0, miH = 0, maW = 0, maH = 0, width = 0, height = 0, intersects = 0, arrows = 0;
+    private Point head;
+    private Point[][] grid = new Point[100][100];
+    private int[] intersection = new int[50];
+    private A2Direction[] theMoves = new A2Direction[50];
+    MyHashTable<Point> collide = new MyHashTable<>();
 
-    public static void main(String[] args){
-        MyItinerary simulate= new MyItinerary();
-        for(int i=0;i<20;i++)
-            simulate.makeMove();
-        System.out.println(Arrays.toString(simulate.getIntersections()));
-        System.out.println(simulate.widthOfItinerary());
-        System.out.println(simulate.heightOfItinerary());
+    public static void main(String[] args) {
+        A2Direction[] array = new A2Direction[10];
+        array[0] = A2Direction.LEFT;
+        array[1] = A2Direction.DOWN;
+        array[2] = A2Direction.RIGHT;
+        array[3] = A2Direction.DOWN;
+        array[4] = A2Direction.LEFT;
+        array[5] = A2Direction.UP;
+        array[6] = A2Direction.LEFT;
+        array[7] = A2Direction.UP;
+        array[8] = A2Direction.RIGHT;
+        array[9] = A2Direction.UP;
 
+        MyItinerary simulate = new MyItinerary();
+        simulate.moves(array);
+        System.out.println(simulate.toString());
+        System.out.println("Rotate right results in: " + Arrays.toString(simulate.rotateRight()));
+        System.out.println("Intersections:" + Arrays.toString(simulate.getIntersections()) + " !");
+        System.out.println("Width is:" + simulate.widthOfItinerary());
+        System.out.println("Height is:" + simulate.heightOfItinerary());
     }
 
-    /* The hint provided in the ex, suggests using the previous hash implementation to find cycles on a path.
-     * Keeping a set of all the nodes that have seen so far and testing to see if the next node is in that set would be
-     * a perfectly correct solution. It would run fast as well.
-     * However it would use enough extra space to make a copy of the linked list.
-     * Allocating that much memory is prohibitively expensive for large lists. // Inefficient solution
-     * Efficient solution would use either Brent's Or Floyd's algorithm and intuitively keep track of intersections.
-     */
-
-    public MyItinerary() {
-        head = new Point(0,0);
-        collider.insert(head);
+    MyItinerary() {
+        head = new Point(grid.length / 2, grid.length / 2);
     }
 
-    public int widthOfItinerary() { return Math.abs(width); }
-    public int heightOfItinerary() { return Math.abs(height); }
-    // TODO: next point is affected not the origin;  start from origin until you reach last.next points to null
+    public int widthOfItinerary() {
+        return Math.abs(miW) + maW;
+    }
+
+    public int heightOfItinerary() {
+        return Math.abs(miH) + maH;
+    }
+
     public A2Direction[] rotateRight() {
-        String str= "the new path will take these Steps: ";
-        /*if (head.getMove() == A2Direction.UP)
-           str+="RIGHT.";
-        else if (head.getMove() == A2Direction.RIGHT)
-            str+="DOWN.";
-        else if (head.getMove() == A2Direction.LEFT)
-            str+="UP.";
-        else str+="LEFT.";
-*/
-        return new A2Direction[0];
+        A2Direction[] rotation = new A2Direction[arrows];
+        for (int i = 0; i < arrows; i++) {
+            if (theMoves[i] == A2Direction.UP)
+                rotation[i] = A2Direction.RIGHT;
+            else if (theMoves[i] == A2Direction.RIGHT)
+                rotation[i] = A2Direction.DOWN;
+            else if (theMoves[i] == A2Direction.LEFT)
+                rotation[i] = A2Direction.UP;
+            else rotation[i] = A2Direction.LEFT;
+        }
+        return rotation;
     }
+
     public int[] getIntersections() {
-        return intersection;
+        int[] displayIntersects = new int[intersects];
+        System.arraycopy(intersection, 0, displayIntersects, 0, intersects);
+        return displayIntersects;
+    }
+
+    private void moves(A2Direction[] example) {
+        for (A2Direction anExample : example) {
+            theMoves[arrows++] = anExample;
+            Point move = new Point(0, 0);
+            pointManipulation(move);
+            move.next = head;
+            head = move;
+            if(collide.contains(head))
+                intersection[intersects++]=head.getPos();
+            collide.insert(head);
+        }
+    }
+
+    public String toString() {
+        StringBuilder linkedList = new StringBuilder();
+        Point tmp = head;
+        while (tmp.next != null) {
+            linkedList.append("(").append(tmp.getX()).append(",").append(tmp.getY()).append(") . <---");
+            tmp = tmp.next;
+        }
+        linkedList.append("Head is this point");
+        return linkedList.toString();
     }
 
     /*Simulates a random path and keeps track of directions and intersections.*/
-    public void makeMove() {
+    private void randomMove() {
         Random rn = new Random();
         int pickMove = rn.nextInt(A2Direction.values().length);
         Point move = new Point(0, 0);
-        IgotTheMoves[arrows++]=A2Direction.values()[pickMove]; // ==> for the rotate right method.
+        theMoves[arrows++] = A2Direction.values()[pickMove]; // ==> for the rotate right method.
+        pointManipulation(move);
+        move.next = head;
+        head = move;
+    }
 
-        if (IgotTheMoves[arrows-1]== A2Direction.UP){
+
+    private int init(int i) {
+        if (i > 0) {
+            grid = new Point[2 * i][2 * i];
+            intersection = new int[i];
+            theMoves = new A2Direction[i];
+            return i;
+        } else return 20; //for simplicity's sake.
+    }
+
+    private void pointManipulation(Point move) {
+        if (theMoves[arrows - 1] == A2Direction.UP) {
             move.setY(head.getY() + 1);
             move.setX(head.getX());
             height++;
-        }
-        else if (IgotTheMoves[arrows-1] == A2Direction.DOWN){
+        } else if (theMoves[arrows - 1] == A2Direction.DOWN) {
             move.setY(head.getY() - 1);
             move.setX(head.getX());
             height--;
-        }
-        else if (IgotTheMoves[arrows-1] == A2Direction.RIGHT){
+        } else if (theMoves[arrows - 1] == A2Direction.RIGHT) {
             move.setX(head.getX() + 1);
             move.setY(head.getY());
             width++;
-        }
-        else{
+        } else {
             move.setX(head.getX() - 1);
             move.setY(head.getY());
             width--;
         }
-
-        if (!collider.contains(move)) collider.insert(move); // ==>  keeps a list of intersections
-        else intersection[intersects++]= arrows;
-        head = move;
+        if (height < miH) miH = height;
+        if (height > maH) maH = height;
+        if (width < miW) miW = width;
+        if (width > maW) maW = width;
+        move.setPos(arrows - 1);
     }
 
-    private class Point {
-        int x, y;
-        Point(int x1, int y1) {
-            this.x = x1;
-            this.y = y1;
-        }
-
-        int getX() { return x; }
-        int getY() { return y; }
-        void setX(int x) { this.x = x; }
-        void setY(int y) { this.y = y; }
-    }
 }
