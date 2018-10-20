@@ -1,3 +1,7 @@
+
+/**
+ * Created by Mehdi on 16/10/2018 for A2.
+ */
 public class MyHashTable<AnyType> implements A2HashTable<AnyType>{
 
     private static final int DEFAULT_SIZE = 18;
@@ -104,7 +108,8 @@ public class MyHashTable<AnyType> implements A2HashTable<AnyType>{
         if (num == 2) return true;
         if (num % 2 == 0) return false;
         for (int i = 3; i * i <= num; i += 2)
-            if (num % i == 0) return false;
+            if (num % i == 0)
+                return false;
         return true;
     }
 }

@@ -2,7 +2,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 /**
- * Created by Mehdi on 16/10/2018 for the MyItinerary project.
+ * Created by Mehdi on 16/10/2018 for A2.
  */
 public class MyItinerary implements A2Itinerary<A2Direction> {
     private int miW = 0, miH = 0, maW = 0, maH = 0, width = 0, height = 0, intersects = 0, arrows = 0;
@@ -86,11 +86,12 @@ public class MyItinerary implements A2Itinerary<A2Direction> {
             linkedList.append("(").append(tmp.getX()).append(",").append(tmp.getY()).append(") . <---");
             tmp = tmp.next;
         }
-        linkedList.append("Head is this point");
+        linkedList.append("Head NODE is this point");
         return linkedList.toString();
     }
 
-    /*Simulates a random path and keeps track of directions and intersections.*/
+    /* If you want to test around the solution for different examples ==>
+     * Simulates a random path and keeps track of directions and intersections.*/
     private void randomMove() {
         Random rn = new Random();
         int pickMove = rn.nextInt(A2Direction.values().length);
@@ -100,8 +101,6 @@ public class MyItinerary implements A2Itinerary<A2Direction> {
         move.next = head;
         head = move;
     }
-
-
     private int init(int i) {
         if (i > 0) {
             grid = new Point[2 * i][2 * i];
