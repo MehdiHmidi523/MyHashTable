@@ -7,6 +7,14 @@
 public class MyMeasure implements A2Measure {
     private FibonacciHeap arr1 = new FibonacciHeap();
     private FibonacciHeap arr2 = new FibonacciHeap();
+    public static void main(String[] args){
+        MyMeasure s = new MyMeasure();
+       if(s.isSameCollection(new int[]{10, 1, 7, 10}, new int[]{1, 10, 7, 10}))
+           System.out.println("isSameCollection([10,1,7,10], [1, 10, 7,10]) returns true ");
+       else
+           System.out.println("evaluation is false which shouldn't happen!");
+
+    }
 
     public MyMeasure() {
         //we need a data structure that allows duplication and orders the input in a way that keeps the minimum available for a speedy removal.
@@ -71,7 +79,8 @@ public class MyMeasure implements A2Measure {
         void createHeap(int[] array1) {
             clear();
             for (int i = 0; i < array1.length; i++)
-                insert(array1[i], i);
+                insert(array1[i],i);
+            consolidate();
         }
 
         //the consolidate operation, which is the only complex bit of code in a Fibonacci Heap,
@@ -110,7 +119,7 @@ public class MyMeasure implements A2Measure {
             // the order of the root elements is of no consequence to the algorithm.
         }
 
-        public void insert(int x, double key) {
+        public void insert(int x, int key) {
             Node node = new Node(x, key);
             if (min != null) {
                 node.right = min;
@@ -146,19 +155,19 @@ public class MyMeasure implements A2Measure {
                 consolidate();
             }
             heapSize--;
-            return popPop.data;
+            return popPop.key;
         }
 
         class Node {
             private int data;
-            private double key;
+            private int key;
             private Node parent;
             private Node child;
             private Node right;
             private Node left;
             private int degree;
 
-            Node(int data, double key) {
+            Node(int data, int key) {
                 this.data = data;
                 this.key = key;
                 right = this;
