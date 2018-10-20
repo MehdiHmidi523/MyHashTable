@@ -7,17 +7,16 @@
 public class MyMeasure implements A2Measure {
     private FibonacciHeap arr1 = new FibonacciHeap();
     private FibonacciHeap arr2 = new FibonacciHeap();
+
     public static void main(String[] args){
-        MyMeasure s = new MyMeasure();
+        MyMeasure s = new MyMeasure(); //we need a data structure that allows duplication and orders the input in a way that keeps the minimum available for a speedy removal.
        if(s.isSameCollection(new int[]{10, 1, 7, 10}, new int[]{1, 10, 7, 10}))
            System.out.println("isSameCollection([10,1,7,10], [1, 10, 7,10]) returns true ");
-       else
-           System.out.println("evaluation is false which shouldn't happen!");
+       if(s.isSameCollection(new int[]{10,1,7,9}, new int[]{1, 10, 7,10}))
+           System.out.println("evaluation is false which is correct! 1");
+       if(s.isSameCollection(new int[]{10,1,7}, new int[]{1, 7, 7,10}))
+            System.out.println("evaluation is false which is correct! 2");
 
-    }
-
-    public MyMeasure() {
-        //we need a data structure that allows duplication and orders the input in a way that keeps the minimum available for a speedy removal.
     }
 
     @Override
@@ -26,9 +25,11 @@ public class MyMeasure implements A2Measure {
             return false;
         arr1.createHeap(array1);
         arr2.createHeap(array2);
-        while (!arr1.isEmpty() && !arr2.isEmpty())
-            if (arr1.removeMin() != arr2.removeMin())
-                return false;
+        while (!arr1.isEmpty() && !arr2.isEmpty()){
+            int k1=arr1.removeMin();
+            int k2= arr2.removeMin();
+            if (k1 != k2) return false;
+        }
         return true;
     }
 
@@ -79,7 +80,7 @@ public class MyMeasure implements A2Measure {
         void createHeap(int[] array1) {
             clear();
             for (int i = 0; i < array1.length; i++)
-                insert(array1[i],i);
+                insert(i, array1[i]);
             consolidate();
         }
 
