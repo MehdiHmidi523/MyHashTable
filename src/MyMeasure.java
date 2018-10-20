@@ -1,54 +1,79 @@
 /**
  * Created by Mehdi on 19/10/2018 for A2.
  */
+//A Fibonacci Heap maintains a pointer to minimum value (which is the root of a tree).
+// All tree roots(upper level) are connected using circular doubly linked list,
+// so all of them can be accessed using single ‘min’ pointer.
 public class MyMeasure implements A2Measure {
-    //A Fibonacci Heap maintains a pointer to minimum value (which is the root of a tree).
-    // All tree roots(upper level) are connected using circular doubly linked list,
-    // so all of them can be accessed using single ‘min’ pointer.
-
     private FibonacciHeap arr1 = new FibonacciHeap();
     private FibonacciHeap arr2 = new FibonacciHeap();
 
-    public MyMeasure(){
-    //we need a data structure that allows duplication and orders the input in a way that keeps the minimum available for a speedy removal.
-
+    public MyMeasure() {
+        //we need a data structure that allows duplication and orders the input in a way that keeps the minimum available for a speedy removal.
     }
 
-    @Override public boolean isSameCollection(int[] array1, int[] array2) {
+    @Override
+    public boolean isSameCollection(int[] array1, int[] array2) {
         if (array2.length != array1.length)
             return false;
         arr1.createHeap(array1);
         arr2.createHeap(array2);
-        while(!arr1.isEmpty() && !arr2.isEmpty())
+        while (!arr1.isEmpty() && !arr2.isEmpty())
             if (arr1.removeMin() != arr2.removeMin())
                 return false;
         return true;
     }
-    @Override public int minDifferences(int[] array1, int[] array2) {
+
+    @Override
+    public int minDifferences(int[] array1, int[] array2) {
         if (array2.length != array1.length)
-           return -99;
+            return -99;
         int sqrtSum = 0;
         arr1.createHeap(array1); //clear heap in this method before any instructions
         arr2.createHeap(array2);
-        while(!arr1.isEmpty() && !arr2.isEmpty()) 
+        while (!arr1.isEmpty() && !arr2.isEmpty())
             sqrtSum += ((arr2.removeMin() - arr1.removeMin()) * (arr2.removeMin() - arr1.removeMin()));//  the squared sum of the differences: ∑(x2-x1)2
         return sqrtSum;
     }
 
-    @Override public int[] getPercentileRange(int[] arr, int lower, int upper) {
-
-        return new int[0];
+    @Override
+    public int[] getPercentileRange(int[] arr, int lower, int upper) {
+        if (lower > upper) throw new IllegalArgumentException();
+        int upperPercent = (int) (arr.length * (upper / 100.0));
+        int lowPercent = (int) (arr.length * (lower / 100.0));
+        //an array to keep the values within range wanted
+        int[] range = new int[upperPercent - lowPercent];
+        //the heap is already sorted! Nodes come out in increasing order by value
+        arr1.createHeap(arr);
+        int n = arr1.heapSize;
+        int index = 0;
+        for (int i = 0; i < n; i++){
+            int x= arr1.removeMin();
+            if(i>=lowPercent && i<=upperPercent)
+                range[index++]=x;
+        }
+        return range;
     }
 
     private class FibonacciHeap { //Text book Solution: Introduction to Algorithms M.I.T
         private Node min;
-        private int n;
-        public void clear() { min = null;n = 0; }
-        boolean isEmpty() { return min == null; }
+        private int heapSize;
+
+        public void clear() {
+            min = null;
+            heapSize = 0;
+        }
+
+        boolean isEmpty() {
+            return min == null;
+        }
 
         void createHeap(int[] array1) {
-
+            clear();
+            for (int i = 0; i < array1.length; i++)
+                insert(array1[i], i);
         }
+
         //the consolidate operation, which is the only complex bit of code in a Fibonacci Heap,
         // as everything else is fairly trivial.
         private void consolidate() {
@@ -79,7 +104,7 @@ public class MyMeasure implements A2Measure {
             } while (w != start);
             min = start;
             for (Node a : degree_array)
-                if (a != null && a.key < min.key) 
+                if (a != null && a.key < min.key)
                     min = a;
             //Do not waste time rebuilding the root list at the end of consolidate;
             // the order of the root elements is of no consequence to the algorithm.
@@ -94,7 +119,7 @@ public class MyMeasure implements A2Measure {
                 node.left.right = node;
                 if (key < min.key) min = node;
             } else min = node;
-            n++;
+            heapSize++;
         }
 
         int removeMin() {
@@ -120,30 +145,8 @@ public class MyMeasure implements A2Measure {
                 min = popPop.right;
                 consolidate();
             }
-            n--;
+            heapSize--;
             return popPop.data;
-        }
-        
-        public FibonacciHeap union(FibonacciHeap H1, FibonacciHeap H2) {
-            FibonacciHeap H = new FibonacciHeap();
-            if (H1 != null && H2 != null) {
-                H.min = H1.min;
-                if (H.min != null) {
-                    if (H2.min != null) {
-                        H.min.right.left = H2.min.left;
-                        H2.min.left.right = H.min.right;
-                        H.min.right = H2.min;
-                        H2.min.left = H.min;
-                        if (H2.min.key < H1.min.key) {
-                            H.min = H2.min;
-                        }
-                    }
-                } else {
-                    H.min = H2.min;
-                }
-                H.n = H1.n + H2.n;
-            }
-            return H;
         }
 
         class Node {
@@ -161,6 +164,7 @@ public class MyMeasure implements A2Measure {
                 right = this;
                 left = this;
             }
+
             /* Make this node a child of the given parent node.*/
             void link(Node parent) {
                 left.right = right;
