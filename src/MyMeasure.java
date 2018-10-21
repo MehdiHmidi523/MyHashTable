@@ -16,7 +16,6 @@ public class MyMeasure implements A2Measure {
            System.out.println("evaluation is false which is correct! 1");
        if(s.isSameCollection(new int[]{10,1,7}, new int[]{1, 7, 7,10}))
             System.out.println("evaluation is false which is correct! 2");
-
     }
 
     @Override
